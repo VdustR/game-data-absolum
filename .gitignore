@@ -1,0 +1,6 @@
+Save.bin
+Save.temp.bin
+*.bin
+*.zip
+__pycache__/
+*.pyc
