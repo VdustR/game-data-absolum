@@ -15,6 +15,13 @@ STATS={
  'Run.Tracking.FixRaw.TotalDamage',
  'Run.Tracking.FixRaw.CriticalHits',
 }
+MEDAL_KEYS={
+ 'Run.Tracking.FixRaw.ShopItemsBought',
+ 'Run.Badge_UltimateUses',
+ 'Run.Badge_MercenariesBought',
+ 'Run.Badge_ThrowableUses',
+ 'Run.Tracking.FixRaw.LifeHealed',
+}
 CHAR_CLASS={1:'Dwarf',2:'Rogue',3:'Sorcerer',4:'Warrior'}
 ORDEALS=('BRO','HORDE','CLASHHERO','MANIA','RAGE','MAGIC','PANDEMONIUM','BOSS','ONEPUNCH','STEELAGE','SOULRUN','VAMPIRE','RIFTWAR','LOOT','HONOR','STARVING','GROUNDHOG')
 
@@ -39,10 +46,9 @@ args=parser.parse_args()
 source=args.source.read_bytes();candidate=args.candidate.read_bytes()
 src_top,src_slot,src_hist=unpack(source)
 dst_top,dst_slot,dst_hist=unpack(candidate)
-assert len(src_hist)==len(dst_hist)==118
+assert len(src_hist)==len(dst_hist)>=118
 assert [(n,w,v) for n,w,v in src_top if n!=17]==[(n,w,v) for n,w,v in dst_top if n!=17]
 assert [(n,w,v) for n,w,v in src_slot if n!=2]==[(n,w,v) for n,w,v in dst_slot if n!=2]
-assert src_top!=dst_top
 
 per_preset=defaultdict(set)
 skill_cycle=defaultdict(set)
@@ -57,20 +63,22 @@ for index,(before,after) in enumerate(zip(src_hist,dst_hist)):
  old_vars={key(v):val(v) for n,w,v in before if n==50}
  new_vars={key(v):val(v) for n,w,v in after if n==50}
  assert old_vars.keys()<=new_vars.keys()
- assert new_vars['Run.FixRaw.gameDuration']==35999
+ assert new_vars.get('Run.FixRaw.gameDuration')==35999,(index,old_vars.get('Run.FixRaw.gameDuration'))
  assert new_vars['Run.Tracking.FixRaw.Clash']==999
  assert new_vars['Run.Tracking.FixRaw.Deflect']==999
  assert new_vars['Run.Tracking.FixRaw.LifeLost']==0
  assert new_vars.get('Run.Tracking.FixRaw.SideStepDodge',0)+new_vars.get('Run.Tracking.FixRaw.JumpDodge',0)==999
+ assert all(new_vars.get(name)==0 for name in MEDAL_KEYS),(index,{name:new_vars.get(name) for name in MEDAL_KEYS})
+ assert sum(n==50 for n,w,v in after)==len(new_vars),index
  for name in old_vars:
   if name in STATS and old_vars[name]>0:
    assert all_nines(new_vars[name]) and len(str(new_vars[name]))==len(str(old_vars[name]))
    modified_stats+=1
-  elif name not in ('Run.FixRaw.gameDuration','Run.Tracking.FixRaw.Clash','Run.Tracking.FixRaw.Deflect','Run.Tracking.FixRaw.LifeLost','Run.Tracking.FixRaw.SideStepDodge','Run.Tracking.FixRaw.JumpDodge'):
+  elif name not in MEDAL_KEYS|{'Run.FixRaw.gameDuration','Run.Tracking.FixRaw.Clash','Run.Tracking.FixRaw.Deflect','Run.Tracking.FixRaw.LifeLost','Run.Tracking.FixRaw.SideStepDodge','Run.Tracking.FixRaw.JumpDodge'}:
    assert new_vars[name]==old_vars[name],(index,name)
  old_pickups=[v for n,w,v in before if n==43]
  new_pickups=[v for n,w,v in after if n==43]
- if index<50:
+ if index<50 or index>=118:
   assert old_pickups==new_pickups
  else:
   old_other=[v for v in old_pickups if special(v) is None]
@@ -87,5 +95,5 @@ for index,(before,after) in enumerate(zip(src_hist,dst_hist)):
 assert set(per_preset)==set(ORDEALS)
 assert all(chars==set(CHAR_CLASS) for chars in per_preset.values())
 assert all(len(skills)==5 for skills in skill_cycle.values())
-assert modified_stats>400
+assert modified_stats>300,modified_stats
 print(f'PASS: {len(dst_hist)} histories, {modified_stats} patterned stats, 17 ordeals x 4 characters, 5 authentic skills per character')

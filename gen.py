@@ -27,6 +27,13 @@ stats={
  'Run.Tracking.FixRaw.TotalDamage',
  'Run.Tracking.FixRaw.CriticalHits',
 }
+medal_keys={
+ 'Run.Tracking.FixRaw.ShopItemsBought',
+ 'Run.Badge_UltimateUses',
+ 'Run.Badge_MercenariesBought',
+ 'Run.Badge_ThrowableUses',
+ 'Run.Tracking.FixRaw.LifeHealed',
+}
 def plain(data):return [(n,w,v) for n,w,v,*_ in fields(data)]
 def key(payload):return next((x.decode() for n,w,x in plain(payload) if n==1),'')
 def value(payload):return next(x for n,w,x in plain(next(x for n,w,x in plain(payload) if n==2)) if n==1)
@@ -39,7 +46,7 @@ def nines(v):return int('9'*len(str(v)))
 
 top=plain(src.read_bytes());si=next(i for i,(n,w,v) in enumerate(top) if n==17)
 slot=plain(top[si][2]);indices=[i for i,(n,w,v) in enumerate(slot) if n==2]
-assert len(indices)==118
+assert len(indices)>=118
 pool=defaultdict(dict)
 for i in indices[:50]:
  rec=plain(slot[i][2]);inner=plain(rec[0][2]);char=next(v for n,w,v in inner if n==23)
@@ -55,7 +62,7 @@ for histnum,i in enumerate(indices):
  dodge_keeper='Run.Tracking.FixRaw.JumpDodge' if 'Run.Tracking.FixRaw.JumpDodge' in dodge else 'Run.Tracking.FixRaw.SideStepDodge'
  if not dodge:dodge_keeper='Run.Tracking.FixRaw.JumpDodge'
  fixed={'Run.Tracking.FixRaw.Clash':999,'Run.Tracking.FixRaw.Deflect':999,'Run.Tracking.FixRaw.LifeLost':0}
- seen_fixed=set()
+ seen_fixed=set();seen_duration=False;seen_medals=set()
  for j,(n,w,v) in enumerate(inner):
   if n==6 and w==0:inner[j]=(6,0,nines(v))
   elif n==50:
@@ -65,14 +72,23 @@ for histnum,i in enumerate(indices):
     inner[j]=(50,2,entry(k,new));changed_stats+=1
    elif k in fixed:
     inner[j]=(50,2,entry(k,fixed[k]));seen_fixed.add(k);changed_stats+=1
+   elif k in medal_keys:
+    inner[j]=(50,2,entry(k,0));seen_medals.add(k);changed_stats+=1
    elif k in stats:
     old=value(v)
     if old>0:inner[j]=(50,2,entry(k,nines(old)));changed_stats+=1
    elif k=='Run.FixRaw.gameDuration':
-    inner[j]=(50,2,entry(k,35999))
- if not dodge:inner.append((50,2,entry('Run.Tracking.FixRaw.JumpDodge',999)))
- for k in fixed.keys()-seen_fixed:inner.append((50,2,entry(k,fixed[k])))
- if histnum>=50:
+    inner[j]=(50,2,entry(k,35999));seen_duration=True
+ missing=[]
+ if not dodge:missing.append((50,2,entry('Run.Tracking.FixRaw.JumpDodge',999)))
+ if not seen_duration:missing.append((50,2,entry('Run.FixRaw.gameDuration',35999)))
+ for k in sorted(fixed.keys()-seen_fixed):missing.append((50,2,entry(k,fixed[k])))
+ for k in sorted(medal_keys-seen_medals):missing.append((50,2,entry(k,0)))
+ if missing:
+  # Keep tracking variables together; the game drops them if appended after later fields.
+  insert_at=max(j for j,(n,w,v) in enumerate(inner) if n==50)+1
+  inner[insert_at:insert_at]=missing
+ if 50<=histnum<118:
   name=next((name for name in order if f'Run.CO_Preset_SUCCESS_ORDEAL_{name}'.encode() in rec[0][2]),None)
   assert name,name
   chosen=choices[char][order.index(name)%5]

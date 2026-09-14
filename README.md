@@ -9,12 +9,12 @@
 
 ## What this save changes
 
-- Sets Radiance level to **999** and Crystals, Primordial Roots, and Meta Fruits to **999,999** each.
+- Sets Radiance level to **999**. Current balances: **1,000,834** Crystals, **999,999** Primordial Roots, and **999,999** Meta Fruits.
 - Enables the known character growth, upgrades, purchases, and unlock flags in this save.
-- Marks **16 Mystic Ordeals** gold and gives each one records for all four characters. Some challenge rules remain locked.
-- Expands battle history to **118 runs**. Edited records use conspicuous strings of 9s for scores and tracked stats, a **9:59** timer, **999** clashes, deflects, and dodges, and **0** damage taken. Synthetic ordeal runs rotate selected skills by character.
+- Shows **17 Mystic Ordeals** with gold icons and all visible medals, including the completed **Fortitude Ordeal**.
+- Contains **119 battle records**. Edited records use strings of 9s for scores and tracked stats, a **9:59** timer, **999** clashes, deflects, and dodges, and **0** damage taken. The 68 generated ordeal runs cover four characters per ordeal and rotate five authentic skills per character.
 
-**Still unresolved:** The completion counter is missing 1%, and the **Courage trial (勇氣試煉)** is not unlocked.
+**Still unresolved:** Global progress remains at **111%**, one point short of 112%.
 
 ## Install
 
@@ -27,7 +27,7 @@ This save was checked in game on the tested version above. Compatibility with ot
 
 ## Scripts
 
-`gen.py` recreates the battle-record pattern from the specific **118-record** save used for this release. It requires Python 3 and does not overwrite its input or an existing output save.
+`gen.py` recreates the battle-record and medal pattern from this save and later saves that retain its first **118 records**. It requires Python 3 and does not overwrite its input or an existing output save.
 
 ```text
 python gen.py path/to/source/Save.bin path/to/output-folder
@@ -35,6 +35,8 @@ python test.py path/to/source/Save.bin path/to/output-folder/Save.bin
 ```
 
 `test.py` checks the generated records and confirms that non-history data is preserved. Load any generated save in game before using it as your main save.
+
+[Save format notes](SAVE_FORMAT.md) document the Fortitude completion record, medal fields, and field ordering observed in this game build.
 
 ## License
 
