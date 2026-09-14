@@ -57,7 +57,12 @@ for index,(before,after) in enumerate(zip(src_hist,dst_hist)):
  assert next(v for n,w,v in before if n==23)==next(v for n,w,v in after if n==23)
  character=next(v for n,w,v in after if n==23)
  assert character in CHAR_CLASS
- assert [(n,w,v) for n,w,v in before if n not in (6,43,50)]==[(n,w,v) for n,w,v in after if n not in (6,43,50)]
+ is_generated=50<=index<118
+ groundhog=is_generated and any(n==50 and key(v)=='Run.CO_Preset_SUCCESS_ORDEAL_GROUNDHOG' for n,w,v in before)
+ unchanged=lambda record:[(n,w,v) for n,w,v in record if n not in (6,43,50) and not(groundhog and n==51 and key(v)=='Perma.CO_Preset')]
+ assert unchanged(before)==unchanged(after),index
+ if groundhog:
+  assert [val(v) for n,w,v in after if n==51 and key(v)=='Perma.CO_Preset']==[18*65536],index
  scores=[v for n,w,v in after if n==6 and w==0]
  assert len(scores)==1 and all_nines(scores[0]) and len(str(scores[0]))==len(str(next(v for n,w,v in before if n==6)))
  old_vars={key(v):val(v) for n,w,v in before if n==50}

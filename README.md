@@ -11,7 +11,7 @@
 
 - Sets Radiance level to **999**. Current balances: **1,000,834** Crystals, **999,999** Primordial Roots, and **999,999** Meta Fruits.
 - Enables the known character growth, upgrades, purchases, and unlock flags in this save.
-- Shows **17 Mystic Ordeals** with gold icons and all visible medals, including the completed **Fortitude Ordeal**.
+- Shows **17 Mystic Ordeals** with gold icons, including the completed **Fortitude Ordeal**. Fortitude's rule medals are lit; its four character medals are being retested after a preset-ID correction.
 - Contains **119 battle records**. Edited records use strings of 9s for scores and tracked stats, a **9:59** timer, **999** clashes, deflects, and dodges, and **0** damage taken. The 68 generated ordeal runs cover four characters per ordeal and rotate five authentic skills per character.
 
 **Still unresolved:** Global progress remains at **111%**, one point short of 112%.

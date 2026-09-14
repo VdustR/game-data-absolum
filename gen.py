@@ -91,6 +91,10 @@ for histnum,i in enumerate(indices):
  if 50<=histnum<118:
   name=next((name for name in order if f'Run.CO_Preset_SUCCESS_ORDEAL_{name}'.encode() in rec[0][2]),None)
   assert name,name
+  if name=='GROUNDHOG':
+   preset=[j for j,(n,w,v) in enumerate(inner) if n==51 and key(v)=='Perma.CO_Preset']
+   assert len(preset)==1,(histnum,preset)
+   inner[preset[0]]=(51,2,entry('Perma.CO_Preset',18*65536))
   chosen=choices[char][order.index(name)%5]
   payload=pool[char][chosen]
   selected=[j for j,(n,w,v) in enumerate(inner) if n==43 and special_path(v) and is_selected(v)]
