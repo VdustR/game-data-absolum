@@ -46,7 +46,10 @@ def nines(v):return int('9'*len(str(v)))
 
 top=plain(src.read_bytes());si=next(i for i,(n,w,v) in enumerate(top) if n==17)
 slot=plain(top[si][2]);indices=[i for i,(n,w,v) in enumerate(slot) if n==2]
-assert len(indices)>=118
+if len(indices)<119:parser.error('input must include the genuine completed Fortitude run at record 119')
+real_record=plain(slot[indices[118]][2]);real_fortitude=plain(real_record[0][2])
+if not any(n==51 and key(v)=='Perma.CO_Preset_SUCCESS_GROUNDHOG' for n,w,v in real_fortitude):
+ parser.error('record 119 is not a genuine completed Fortitude run')
 pool=defaultdict(dict)
 for i in indices[:50]:
  rec=plain(slot[i][2]);inner=plain(rec[0][2]);char=next(v for n,w,v in inner if n==23)
@@ -58,6 +61,11 @@ choices={char:sorted(p) for char,p in pool.items()}
 changed_stats=0;changed_skills=0
 for histnum,i in enumerate(indices):
  rec=plain(slot[i][2]);inner=plain(rec[0][2]);char=next(v for n,w,v in inner if n==23)
+ fortitude=50<=histnum<118 and (b'Run.CO_Preset_SUCCESS_ORDEAL_GROUNDHOG' in rec[0][2] or b'Perma.CO_Preset_SUCCESS_GROUNDHOG' in rec[0][2])
+ if fortitude:
+  inner=list(real_fortitude)
+  char_pos=next(j for j,(n,w,v) in enumerate(inner) if n==23)
+  inner[char_pos]=(23,0,char)
  dodge={key(v):value(v) for n,w,v in inner if n==50 and key(v) in ('Run.Tracking.FixRaw.SideStepDodge','Run.Tracking.FixRaw.JumpDodge')}
  dodge_keeper='Run.Tracking.FixRaw.JumpDodge' if 'Run.Tracking.FixRaw.JumpDodge' in dodge else 'Run.Tracking.FixRaw.SideStepDodge'
  if not dodge:dodge_keeper='Run.Tracking.FixRaw.JumpDodge'
@@ -89,12 +97,8 @@ for histnum,i in enumerate(indices):
   insert_at=max(j for j,(n,w,v) in enumerate(inner) if n==50)+1
   inner[insert_at:insert_at]=missing
  if 50<=histnum<118:
-  name=next((name for name in order if f'Run.CO_Preset_SUCCESS_ORDEAL_{name}'.encode() in rec[0][2]),None)
+  name='GROUNDHOG' if fortitude else next((name for name in order if f'Run.CO_Preset_SUCCESS_ORDEAL_{name}'.encode() in rec[0][2]),None)
   assert name,name
-  if name=='GROUNDHOG':
-   preset=[j for j,(n,w,v) in enumerate(inner) if n==51 and key(v)=='Perma.CO_Preset']
-   assert len(preset)==1,(histnum,preset)
-   inner[preset[0]]=(51,2,entry('Perma.CO_Preset',18*65536))
   chosen=choices[char][order.index(name)%5]
   payload=pool[char][chosen]
   selected=[j for j,(n,w,v) in enumerate(inner) if n==43 and special_path(v) and is_selected(v)]
@@ -108,7 +112,21 @@ for histnum,i in enumerate(indices):
   changed_skills+=1
  rec[0]=(1,2,encode_fields(inner));slot[i]=(2,2,encode_fields(rec))
 assert changed_skills==68,changed_skills
+active_i=next(i for i,(n,w,v) in enumerate(slot) if n==1)
+active=plain(slot[active_i][2]);resources={};radiance=[]
+resource_keys={'Perma.FixRaw.Crystal','Perma.FixRaw.PrimordialRoot','Perma.FixRaw.MetaFruit'}
+for i,(n,w,v) in enumerate(active):
+ if n!=51:continue
+ k=key(v)
+ if k in resource_keys:
+  old=value(v);resources[k]=old
+  active[i]=(51,2,entry(k,nines(old)))
+ elif k=='Perma.Karma_Level':
+  radiance.append(value(v));active[i]=(51,2,entry(k,999*65536))
+assert set(resources)==resource_keys,resources
+assert len(radiance)==1,radiance
+slot[active_i]=(1,2,encode_fields(active))
 top[si]=(17,2,encode_fields(slot));result=encode_fields(top)
 for name in ('Save.bin','Save.temp.bin'):(out/name).write_bytes(result)
-print('stats',changed_stats,'skills',changed_skills,'sha256',hashlib.sha256(result).hexdigest(),'bytes',len(result))
+print('stats',changed_stats,'skills',changed_skills,'resources',{k:(v,nines(v)) for k,v in resources.items()},'radiance',radiance[0]//65536,'->',999,'sha256',hashlib.sha256(result).hexdigest(),'bytes',len(result))
 print('skill choices per character:',{char:[path.split('/')[-1] for path in paths] for char,paths in choices.items()})

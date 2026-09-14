@@ -46,9 +46,19 @@ args=parser.parse_args()
 source=args.source.read_bytes();candidate=args.candidate.read_bytes()
 src_top,src_slot,src_hist=unpack(source)
 dst_top,dst_slot,dst_hist=unpack(candidate)
-assert len(src_hist)==len(dst_hist)>=118
+assert len(src_hist)==len(dst_hist)>=119
 assert [(n,w,v) for n,w,v in src_top if n!=17]==[(n,w,v) for n,w,v in dst_top if n!=17]
-assert [(n,w,v) for n,w,v in src_slot if n!=2]==[(n,w,v) for n,w,v in dst_slot if n!=2]
+assert [(n,w,v) for n,w,v in src_slot if n not in (1,2)]==[(n,w,v) for n,w,v in dst_slot if n not in (1,2)]
+src_active=plain(next(v for n,w,v in src_slot if n==1))
+dst_active=plain(next(v for n,w,v in dst_slot if n==1))
+active_changes={'Perma.FixRaw.Crystal','Perma.FixRaw.PrimordialRoot','Perma.FixRaw.MetaFruit','Perma.Karma_Level'}
+unchanged_active=lambda active:[(n,w,v) for n,w,v in active if not(n==51 and key(v) in active_changes)]
+assert unchanged_active(src_active)==unchanged_active(dst_active)
+for resource in active_changes-{'Perma.Karma_Level'}:
+ old=[val(v) for n,w,v in src_active if n==51 and key(v)==resource]
+ new=[val(v) for n,w,v in dst_active if n==51 and key(v)==resource]
+ assert len(old)==len(new)==1 and new[0]==int('9'*len(str(old[0]))),(resource,old,new)
+assert [val(v) for n,w,v in dst_active if n==51 and key(v)=='Perma.Karma_Level']==[999*65536]
 
 per_preset=defaultdict(set)
 skill_cycle=defaultdict(set)
@@ -58,14 +68,18 @@ for index,(before,after) in enumerate(zip(src_hist,dst_hist)):
  character=next(v for n,w,v in after if n==23)
  assert character in CHAR_CLASS
  is_generated=50<=index<118
- groundhog=is_generated and any(n==50 and key(v)=='Run.CO_Preset_SUCCESS_ORDEAL_GROUNDHOG' for n,w,v in before)
- unchanged=lambda record:[(n,w,v) for n,w,v in record if n not in (6,43,50) and not(groundhog and n==51 and key(v)=='Perma.CO_Preset')]
- assert unchanged(before)==unchanged(after),index
+ groundhog=is_generated and (any(n==50 and key(v)=='Run.CO_Preset_SUCCESS_ORDEAL_GROUNDHOG' for n,w,v in before) or any(n==51 and key(v)=='Perma.CO_Preset_SUCCESS_GROUNDHOG' for n,w,v in before))
+ assert any(n==51 and key(v)=='Perma.CO_Preset_SUCCESS_GROUNDHOG' for n,w,v in src_hist[118])
+ cloned=groundhog
+ baseline=src_hist[118] if cloned else before
+ unchanged=lambda record:[(n,w,v) for n,w,v in record if n not in (6,23,43,50)]
+ assert unchanged(baseline)==unchanged(after),index
  if groundhog:
   assert [val(v) for n,w,v in after if n==51 and key(v)=='Perma.CO_Preset']==[18*65536],index
+  assert [val(v) for n,w,v in after if n==51 and key(v)=='Perma.CO_Preset_SUCCESS_GROUNDHOG']==[131072],index
  scores=[v for n,w,v in after if n==6 and w==0]
- assert len(scores)==1 and all_nines(scores[0]) and len(str(scores[0]))==len(str(next(v for n,w,v in before if n==6)))
- old_vars={key(v):val(v) for n,w,v in before if n==50}
+ assert len(scores)==1 and all_nines(scores[0]) and len(str(scores[0]))==len(str(next(v for n,w,v in baseline if n==6)))
+ old_vars={key(v):val(v) for n,w,v in baseline if n==50}
  new_vars={key(v):val(v) for n,w,v in after if n==50}
  assert old_vars.keys()<=new_vars.keys()
  assert new_vars.get('Run.FixRaw.gameDuration')==35999,(index,old_vars.get('Run.FixRaw.gameDuration'))
@@ -81,7 +95,7 @@ for index,(before,after) in enumerate(zip(src_hist,dst_hist)):
    modified_stats+=1
   elif name not in MEDAL_KEYS|{'Run.FixRaw.gameDuration','Run.Tracking.FixRaw.Clash','Run.Tracking.FixRaw.Deflect','Run.Tracking.FixRaw.LifeLost','Run.Tracking.FixRaw.SideStepDodge','Run.Tracking.FixRaw.JumpDodge'}:
    assert new_vars[name]==old_vars[name],(index,name)
- old_pickups=[v for n,w,v in before if n==43]
+ old_pickups=[v for n,w,v in baseline if n==43]
  new_pickups=[v for n,w,v in after if n==43]
  if index<50 or index>=118:
   assert old_pickups==new_pickups
@@ -92,7 +106,8 @@ for index,(before,after) in enumerate(zip(src_hist,dst_hist)):
   chosen=[special(v) for v in new_pickups if special(v) is not None and selected(v)]
   assert len(chosen)==1 and f'/Specials/{CHAR_CLASS[character]}_' in chosen[0]
   assert len(set(special(v) for v in new_pickups if special(v) is not None))==len([v for v in new_pickups if special(v) is not None])
-  name=next((name for name in ORDEALS if f'Run.CO_Preset_SUCCESS_ORDEAL_{name}' in new_vars),None)
+  source_vars={key(v):val(v) for n,w,v in before if n==50}
+  name='GROUNDHOG' if groundhog else next((name for name in ORDEALS if f'Run.CO_Preset_SUCCESS_ORDEAL_{name}' in source_vars),None)
   assert name is not None
   per_preset[name].add(character)
   skill_cycle[character].add(chosen[0])
