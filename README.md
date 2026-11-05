@@ -10,7 +10,7 @@
 - Windows Steam: Absolum **v05 r35192**.
 - Android: Absolum **1.0.148 (148)** on a Samsung **SM-S9110**, tested November 5, 2026. The adapted save loaded into camp and displayed Radiance 999 and 111% progress. Individual ordeal medals were not rechecked on Android.
 
-Use the Windows ZIP for Steam. The [Android ZIP](https://github.com/VdustR/game-data-absolum/releases/download/v05-r35192-save-2/Absolum-Fortitude-complete-Android-1.0.148.zip) includes a save template and a local adaptation tool; follow the [Android instructions](ANDROID.md) before copying files to a phone.
+Use the Windows ZIP for Steam. The [Android ZIP](https://github.com/VdustR/game-data-absolum/releases/download/android-1.0.148-save-1/Absolum-Fortitude-complete-Android-1.0.148.zip) includes a save template and a local adaptation tool; follow the [Android instructions](ANDROID.md) before copying files to a phone.
 
 ## Save contents
 

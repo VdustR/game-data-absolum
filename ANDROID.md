@@ -4,7 +4,7 @@ Tested November 5, 2026 with **Absolum 1.0.148 (148)**, package `com.playdigious
 
 ## Package contents
 
-Download [the Android 1.0.148 package](https://github.com/VdustR/game-data-absolum/releases/download/v05-r35192-save-2/Absolum-Fortitude-complete-Android-1.0.148.zip) from the same release as the Windows save.
+Download [the Android 1.0.148 package](https://github.com/VdustR/game-data-absolum/releases/download/android-1.0.148-save-1/Absolum-Fortitude-complete-Android-1.0.148.zip) from the dedicated Android release. The Windows Steam save has a separate release.
 
 - `template/Save.bin` and `template/Save.temp.bin`: the complete Steam release progress, without a phone's identifier-like field.
 - `android_save.py` and `proto_wire.py`: Python 3 tools for adapting the template locally.
