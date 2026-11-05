@@ -5,7 +5,12 @@
 > [!CAUTION]
 > Use at your own risk. Back up your save before replacing it.
 
-**Tested on:** Absolum **v05 r35192**, Windows Steam.
+**Tested on:**
+
+- Windows Steam: Absolum **v05 r35192**.
+- Android: Absolum **1.0.148 (148)** on a Samsung **SM-S9110**, tested November 5, 2026. The adapted save loaded into camp and displayed Radiance 999 and 111% progress. Individual ordeal medals were not rechecked on Android.
+
+Use the Windows ZIP for Steam. The [Android ZIP](https://github.com/VdustR/game-data-absolum/releases/download/v05-r35192-save-2/Absolum-Fortitude-complete-Android-1.0.148.zip) includes a save template and a local adaptation tool; follow the [Android instructions](ANDROID.md) before copying files to a phone.
 
 ## Save contents
 
@@ -16,7 +21,7 @@
 
 Overall progress currently shows **111%**. How to reach **112%** is unknown.
 
-## Install
+## Install on Windows Steam
 
 1. Exit Absolum.
 2. Back up `Save.bin` and `Save.temp.bin` in `%LOCALAPPDATA%\Absolum_SaveGame_Steam`.
@@ -24,6 +29,10 @@ Overall progress currently shows **111%**. How to reach **112%** is unknown.
 4. Launch the game and check your save slot and battle records.
 
 This save was checked in game on the tested version above.
+
+## Install on Android
+
+Follow [Android installation and compatibility notes](ANDROID.md). The Android package preserves a field from your own phone save during adaptation. Its bundled template is not a ready-to-copy Android save.
 
 ## Scripts
 
@@ -37,6 +46,13 @@ python test.py path/to/source/Save.bin path/to/output-folder/Save.bin
 `test.py` checks the generated records, Radiance, resources, and preservation of other data. Load any generated save in game before using it as your main save.
 
 [Save format notes](SAVE_FORMAT.md) document the Fortitude completion record, medal fields, and field ordering observed in this game build.
+
+`android_save.py` combines the release template with the local phone save's top-level field 21 without changing either input. It creates a new output directory containing both save files. It does not edit a connected device.
+
+```text
+python android_save.py path/to/template/Save.bin path/to/phone/Save.bin path/to/new-output-folder
+python -m unittest -v test_android
+```
 
 ## License
 

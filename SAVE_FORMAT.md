@@ -16,3 +16,15 @@ These notes come from comparing an untouched save before and after a player comp
 Records 50–117 cover 17 ordeals with four characters per ordeal. `gen.py` retains that layout and cycles through five selected skills found in the original first 50 records for each character. For Fortitude's four generated records, it clones the genuine post-clear record before changing character and selected skill. It then edits scores and tracked statistics into obvious 9 patterns and sets the medal tracking values above to zero. `test.py` checks the 17-by-4 layout, five-skill cycle, unchanged non-history data, and the required tracking values.
 
 Use an untouched post-Fortitude save as input when reproducing the 119-record version. The scripts do not create genuine completion data for a trial that has not been cleared.
+
+## Android compatibility observation
+
+On November 5, 2026, an Android **1.0.148 (148)** save from a Samsung **SM-S9110** was parsed with the same `proto_wire.py` reader. The original Android file round-tripped byte-for-byte through the reader/writer. Both the Steam release and Android save had three top-level field-17 slots and a length-delimited field 19 containing `1.1`; this marker's meaning has not been established.
+
+The Android save contained an additional length-delimited top-level field **21** with an identifier-like string. The Steam release had no field 21. Its purpose, relationship to accounts or devices, and necessity for loading or cloud synchronization are unknown. Do not assign it an account-ID meaning or publish a real phone's value based on this observation.
+
+The tested adaptation kept every byte of the Steam release, then appended the original Android field 21. It replaced the phone's progress with the full release progress; it did not merge unlocks into the phone's previous slot. Android recognized the slot, displayed Radiance **999** and overall progress **111%**, and loaded the camp scene. The user also reported that it appeared to work. This does not establish that an unmodified Steam file loads directly, that field 21 is required, or that all versions support cross-platform transfer.
+
+The camp HUD showed **9,999,869** Crystals and **999,999** of each other resource. The input and the save read back immediately after camp load still contained **9,999,999** Crystals. The reason for the 130-Crystal difference and its later persistence were not established. Individual Android ordeal/medal screens, extended gameplay, cloud synchronization, and transferring a save back to Steam were not tested.
+
+See [Android installation](ANDROID.md) for the local adaptation tool and release package. Structural checks confirm the 119 records and release fields; they do not replace in-game acceptance.
